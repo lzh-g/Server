@@ -81,12 +81,16 @@ void timer_handler()
     alarm(TIMESLOT);
 }
 
-// 定时器回调函数，删除非活动链接在socket上的注册事件，并关闭
+// 定时器回调函数
 void cb_func(client_data *user_data)
 {
+    // 删除非活动链接在socket上的注册事件
     epoll_ctl(epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
     assert(user_data);
+
+    // 关闭文件描述符
     close(user_data->sockfd);
+    // 减少连接数
     HttpConn::m_userCount--;
     LOG_INFO("close fd %d", user_data->sockfd);
     Log::GetInstance()->flush();
