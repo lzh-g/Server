@@ -161,20 +161,30 @@ int main(int argc, char const *argv[])
 
     // 创建管道
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
+
+    // 设置管道写端为非阻塞
     setnonblocking(pipefd[1]);
+    // 设置管道读端为ET非阻塞
     addfd(epollfd, pipefd[0], false);
 
+    // 传递给主循环的信号值，这里只关注SIGALRM和SIGTERM
     addsig(SIGALRM, sig_handler, false);
     addsig(SIGTERM, sig_handler, false);
+
+    // 循环条件
     bool stop_server = false;
 
     client_data *users_timer = new client_data[MAX_FD];
 
+    // 超时标志
     bool timeout = false;
+
+    // 每隔TIMESLOT时间触发SIGALRM信号
     alarm(TIMESLOT);
 
     while (!stop_server)
     {
+        // 检测发生事件的文件描述符
         int number = epoll_wait(epollfd, events, MAX_EVENT_NUMBER, -1);
         if (number < 0 && errno != EINTR)
         {
@@ -182,6 +192,7 @@ int main(int argc, char const *argv[])
             break;
         }
 
+        // 轮询文件描述符
         for (int i = 0; i < number; i++)
         {
             int sockfd = events[i].data.fd;
@@ -270,6 +281,9 @@ int main(int argc, char const *argv[])
             {
                 int sig;
                 char signals[1024];
+
+                // 从管道读端读出信号值，成功返回字节数，失败返回-1
+                // 正常情况下，ret返回值总为1，只有14和15两个ASCII码对应的字符
                 ret = recv(pipefd[0], signals, sizeof(signals), 0);
                 if (ret == -1 || ret == 0)
                 {
@@ -277,6 +291,7 @@ int main(int argc, char const *argv[])
                 }
                 else
                 {
+                    // 处理信号值对应的逻辑
                     for (int i = 0; i < ret; ++i)
                     {
                         switch (signals[i])

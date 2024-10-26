@@ -8,7 +8,7 @@
 #include <string.h>
 #include <iostream>
 #include <string>
-#include "../Locker/Locker.h"
+#include <Locker/Locker.h>
 #include "stdafx.h"
 
 using namespace std;

@@ -786,7 +786,7 @@ bool HttpConn::AddBlankLine()
     return AddResponse("%s", "\r\n");
 }
 
-// -------------------------------------------
+// ----------------------------------------------------
 // 将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
 void addfd(int epollfd, int fd, bool one_shot)
 {

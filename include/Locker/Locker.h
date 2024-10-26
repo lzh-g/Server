@@ -15,9 +15,9 @@ public:
 
     ~CSem();
 
-    void wait() { sem_wait(&m_sem); }
+    void wait();
 
-    void post() { sem_post(&m_sem); }
+    void post();
 
 private:
     sem_t m_sem; // 信号量
@@ -30,17 +30,19 @@ public:
     CLocker();
     ~CLocker();
 
-    void Lock() { pthread_mutex_lock(&m_mutex); }
+    void Lock();
 
-    void UnLock() { pthread_mutex_unlock(&m_mutex); }
+    void UnLock();
 
-    void Wait() { pthread_cond_wait(&m_cond, &m_mutex); }
+    void Wait();
 
-    void TimeWait(timespec time) { pthread_cond_timedwait(&m_cond, &m_mutex, &time); }
+    void TimeWait(timespec time);
 
-    void Signal() { pthread_cond_signal(&m_cond); }
+    void Signal();
 
-    void Broadcast() { pthread_cond_broadcast(&m_cond); }
+    void Broadcast();
+
+    pthread_mutex_t *Get();
 
 private:
     pthread_mutex_t m_mutex; // 线程互斥量

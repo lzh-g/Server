@@ -7,6 +7,8 @@ inline CBlockQueue<T>::CBlockQueue(int max_size = 1000)
     {
         exit(-1);
     }
+
+    // 构造函数创建循环数组
     m_maxSize = max_size;
     m_array = new T[max_size];
     m_size = 0;
