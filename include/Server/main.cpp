@@ -84,7 +84,7 @@ void timer_handler()
 // 定时器回调函数
 void cb_func(client_data *user_data)
 {
-    // 删除非活动链接在socket上的注册事件
+    // 删除非活动连接在socket上的注册事件
     epoll_ctl(epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
     assert(user_data);
 
@@ -200,10 +200,12 @@ int main(int argc, char const *argv[])
             // 处理新到的客户连接
             if (sockfd == listenfd)
             {
+                // 初始化客户端连接地址
                 struct sockaddr_in client_address;
                 socklen_t client_addrlength = sizeof(client_address);
 
 #ifdef listenfdLT
+                // 该连接分配的文件描述符
                 int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
                 if (connfd < 0)
                 {
@@ -220,14 +222,21 @@ int main(int argc, char const *argv[])
 
                 // 初始化client_data数据
                 // 创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
+                // 初始化该连接对应的连接资源
                 users_timer[connfd].address = client_address;
                 users_timer[connfd].sockfd = connfd;
+                // 创建定时器临时变量
                 UtilTimer *timer = new UtilTimer;
+                // 设置定时器对应的连接资源
                 timer->m_userData = &users_timer[connfd];
+                // 设置回调函数
                 timer->cb_func = cb_func;
                 time_t cur = time(NULL);
+                // 设置绝对超时时间，15s后到期
                 timer->m_expire = cur + 3 * TIMESLOT;
+                // 创建该连接对应的定时器，初始化为前述临时变量
                 users_timer[connfd].timer = timer;
+                // 添加定时器到链表中
                 timer_lst.AddTimer(timer);
 
 #endif
@@ -265,6 +274,7 @@ int main(int argc, char const *argv[])
                 continue;
 #endif
             }
+            // 处理异常事件
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
                 // 服务器端关闭连接，移除对应的定时器
@@ -276,7 +286,7 @@ int main(int argc, char const *argv[])
                     timer_lst.DelTimer(timer);
                 }
             }
-            // 处理信号
+            // 处理定时器信号
             else if ((sockfd == pipefd[0]) && (events[i].events & EPOLLIN))
             {
                 int sig;
@@ -312,6 +322,7 @@ int main(int argc, char const *argv[])
             // 处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN)
             {
+                // 创建定时器临时变量，将该连接对应的定时器取出来
                 UtilTimer *timer = users_timer[sockfd].timer;
                 if (users[sockfd].Read())
                 {
@@ -333,6 +344,7 @@ int main(int argc, char const *argv[])
                 }
                 else
                 {
+                    // 服务器端关闭连接，移除对应的定时器
                     timer->cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
@@ -362,6 +374,7 @@ int main(int argc, char const *argv[])
                 }
                 else
                 {
+                    // 服务器端关闭连接，移除对应的定时器
                     timer->cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
@@ -370,6 +383,8 @@ int main(int argc, char const *argv[])
                 }
             }
         }
+        // 处理定时器为非必须事件，收到信号无需立即处理
+        // 完成读写事件后，再进行处理
         if (timeout)
         {
             timer_handler();

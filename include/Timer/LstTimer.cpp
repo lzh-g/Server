@@ -114,15 +114,24 @@ void SortTimerLst::Tick()
     }
     LOG_INFO("%s", "timer tick");
     Log::GetInstance()->flush();
+
+    // 获取当前时间
     time_t cur = time(NULL);
     UtilTimer *tmp = m_head;
+
+    // 遍历定时器链表
     while (tmp)
     {
+        // 当前时间小于定时器超时时间，后面的定时器也没有到期
         if (cur < tmp->m_expire)
         {
             break;
         }
+
+        // 当前定时器到期，则调用回调函数，执行定时事件
         tmp->cb_func(tmp->m_userData);
+
+        // 将处理后的定时器从链表容器中删除，并重置头结点
         m_head = tmp->m_next;
         if (m_head)
         {

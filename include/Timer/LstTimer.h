@@ -27,14 +27,14 @@ public:
     UtilTimer() : m_prev(NULL), m_next(NULL) {}
 
 public:
-    time_t m_expire;                // 超时事件
+    time_t m_expire;                // 超时时间
     void (*cb_func)(client_data *); // 回调函数
     client_data *m_userData;        // 连接资源
     UtilTimer *m_prev;              // 前向定时器
     UtilTimer *m_next;              // 后继定时器
 };
 
-// 定时器容器类
+// 定时器容器类，为带头尾结点的升序双向链表，按超时时间升序
 class SortTimerLst
 {
 public:
@@ -51,6 +51,8 @@ public:
 
     // 删除定时器
     void DelTimer(UtilTimer *timer);
+
+    // 定时任务处理函数
     void Tick();
 
 private:
