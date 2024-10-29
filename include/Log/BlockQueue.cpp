@@ -130,6 +130,7 @@ bool CBlockQueue<T>::push(const T &item)
         return false;
     }
 
+    // 将新增数据放在循环数组的对应位置
     m_back = (m_back + 1) % m_maxSize;
     m_array[m_back] = item;
 
@@ -145,6 +146,8 @@ template <class T>
 bool CBlockQueue<T>::pop(T &item)
 {
     m_mutex.Lock();
+
+    // 多个消费者时，使用while而不是if
     while (m_size <= 0)
     {
         if (!m_mutex.Wait(m_mutex.get()))
@@ -152,13 +155,14 @@ bool CBlockQueue<T>::pop(T &item)
             m_mutex.UnLock();
             return false;
         }
-
-        m_front = (m_front + 1) % m_maxSize;
-        item = m_array[m_front];
-        m_size--;
-        m_mutex.UnLock();
-        return true;
     }
+
+    // 取出队列首的元素，使用循环数组模拟队列
+    m_front = (m_front + 1) % m_maxSize;
+    item = m_array[m_front];
+    m_size--;
+    m_mutex.UnLock();
+    return true;
 }
 
 template <class T>
