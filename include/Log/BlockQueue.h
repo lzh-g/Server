@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
-#include "../Locker/Locker.h"
+#include <Locker/Locker.h>
 
 using namespace std;
 
@@ -35,7 +35,7 @@ public:
     bool push(const T &item);
     // pop时，若队列无元素，则等待条件变量
     bool pop(T &item);
-    // 增加超时处理
+    // 增加超时处理，项目中没有使用到
     bool pop(T &item, int ms_timeout);
 
 private:

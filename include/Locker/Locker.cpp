@@ -62,6 +62,7 @@ void CLocker::Signal()
 
 void CLocker::Broadcast()
 {
+    // 以广播方式唤醒所有等待目标条件的线程
     pthread_cond_broadcast(&m_cond);
 }
 

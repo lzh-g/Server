@@ -17,6 +17,7 @@ using namespace std;
 class Log
 {
 public:
+    // 线程安全懒汉模式
     static Log *GetInstance();
 
     Log();
