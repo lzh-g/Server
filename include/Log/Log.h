@@ -20,32 +20,37 @@ public:
     // 线程安全懒汉模式
     static Log *GetInstance();
 
-    Log();
-    virtual ~Log();
-
-    void *AsyncWriteLog();
-
+    // 异步写日志公有方法，调用私有方法AsyncWriteLog
     static void *FlushLogThread(void *args);
 
     // 可选择的参数有日志文件、日志缓冲区大小、最大行数以及最长日志条队列
     bool Init(const char *file_name, int log_buf_size = 8192, int split_lines = 5000000, int max_queue_size = 0);
 
+    // 将输出内容按照标准格式整理
     void WriteLog(int level, const char *format, ...);
 
+    // 强制刷新缓冲区
     void flush(void);
 
 private:
-    char m_dirName[128]; // 路径名
-    char m_logName[128]; // log文件名
-    int m_split_lines;   // 日志最大行数
-    int m_log_buf_size;  // 日志缓冲区大小
-    long long m_count;   // 日志行数记录
-    int m_today;         // 因为按天分类，记录当前时间
-    FILE *m_fp;          // 打开log的文件指针
-    char *m_buf;
+    Log();
+    virtual ~Log();
+
+    // 异步写日志方法
+    void *AsyncWriteLog();
+
+private:
+    char m_dirName[128];             // 路径名
+    char m_logName[128];             // log文件名
+    int m_split_lines;               // 日志最大行数
+    int m_log_buf_size;              // 日志缓冲区大小
+    long long m_count;               // 日志行数记录
+    int m_today;                     // 因为按天分类，记录当前时间
+    FILE *m_fp;                      // 打开log的文件指针
+    char *m_buf;                     // 输出内容
     CBlockQueue<string> *m_logQueue; // 阻塞队列
     bool m_isAsync;                  // 同步标志
-    CLocker m_mutex;
+    CLocker m_mutex;                 // 同步类
 };
 
 // ...表示可变参数 __VA_ARGS__就是将...的值复制到此,##用于当可变参数个数为0时，把前面的逗号去掉，否则编译出错
