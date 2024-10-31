@@ -16,8 +16,9 @@ ConnectionPool *ConnectionPool::GetInstance()
     return &connPool;
 }
 
-void ConnectionPool::Init(string Url, string User, string Password, string DataBaseName, int Port, uint32_t Maxconn)
+void ConnectionPool::Init(string Url, string User, string Password, string DataBaseName, int Port, uint32_t MaxConn)
 {
+    // 初始化数据库信息
     this->m_url = Url;
     this->m_port = Port;
     this->m_user = User;
@@ -26,7 +27,8 @@ void ConnectionPool::Init(string Url, string User, string Password, string DataB
 
     m_locker.Lock();
 
-    for (size_t i = 0; i < Maxconn; i++)
+    // 创建Maxconn条数据库连接
+    for (size_t i = 0; i < MaxConn; i++)
     {
         MYSQL *con = NULL;
         con = mysql_init(con);
@@ -36,10 +38,14 @@ void ConnectionPool::Init(string Url, string User, string Password, string DataB
             cout << "Error" << mysql_error(con);
             exit(1);
         }
+        // 更新连接池和空闲连接数量
         m_connList.push_back(con);
+        ++m_freeConn;
     }
 
-    this->m_maxConn = Maxconn;
+    m_reserve = CSem(m_freeConn);
+
+    this->m_maxConn = MaxConn;
 
     m_locker.UnLock();
 }

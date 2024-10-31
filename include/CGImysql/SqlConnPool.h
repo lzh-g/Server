@@ -17,6 +17,7 @@ class CGIMYSQL_LIB ConnectionPool
 {
 public:
     ConnectionPool();
+    // RAII机制销毁连接池
     ~ConnectionPool();
 
     // 单例模式
@@ -29,11 +30,13 @@ public:
     void Destroy();                      // 销毁连接池
 
 private:
-    uint32_t m_maxConn; // 最大连接数
-    uint32_t m_curConn; // 当前连接数
+    uint32_t m_maxConn;  // 最大连接数
+    uint32_t m_curConn;  // 当前连接数
+    uint32_t m_freeConn; // 空闲连接数
 
     CLocker m_locker;
     list<MYSQL *> m_connList; // 连接池
+    CSem m_reserve;
 
     string m_url;          // 主机地址
     string m_port;         // 数据库端口号
