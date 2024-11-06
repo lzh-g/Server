@@ -58,12 +58,16 @@ MYSQL *ConnectionPool::GetConnection()
     {
         return NULL;
     }
+    // 取出连接，信号量原子减一，为0则等待
+    m_reserve.wait();
 
     m_locker.Lock();
 
     con = m_connList.front();
     m_connList.pop_front();
 
+    // 无用变量
+    --m_freeConn;
     ++m_curConn;
 
     m_locker.UnLock();
@@ -79,6 +83,14 @@ bool ConnectionPool::ReleaseConnection(MYSQL *conn)
     m_locker.Lock();
 
     m_connList.push_back(conn);
+
+    ++m_freeConn;
+    --m_curConn;
+
+    m_locker.UnLock();
+
+    m_reserve.post();
+    return true;
 }
 
 int ConnectionPool::GetFreeConn()
